@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.tool.ssh" basedir="./../../" default="help">
+    <target name="deploy.tool.ssh" hidden="true">
+        <property name="path.final" value=""/>
+        <if>
+            <isset property="path" />
+            <then>
+                <property name="path.final" value="cd ${path} &amp;&amp; " override="true"/>
+            </then>
+        </if>
+        <echo message="ssh ${deploy.user}@${deploy.host} '${path.final} ${command}'"/>
+        <exec command="ssh ${deploy.user}@${deploy.host} '${path.final} ${command}'" logoutput="true" />
+    </target>
+</project>

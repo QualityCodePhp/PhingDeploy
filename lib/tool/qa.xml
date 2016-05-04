@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.tool.qa" basedir="./../../" default="help">
+    <target name="deploy.tool.qa.all" hidden="true"
+            depends="deploy.tool.qa.phploc,
+                    deploy.tool.qa.pdepend,
+                    deploy.tool.qa.phpmd,
+                    deploy.tool.qa.phpdcd,
+                    deploy.tool.qa.phpcpd,
+                    deploy.tool.qa.phpcs,
+                    deploy.tool.qa.phpmetrics" 
+    >
+    </target>
+    
+    <target name="deploy.tool.qa.phploc" hidden="true"
+            depends="deploy.check-deploy-parameters,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag" 
+    >
+        <resolvepath propertyName="qa.phploc.res.path" file="${qa.phploc.path}" />
+        <exec 
+            command="${qa.phploc.res.path} ."
+            output="${report.directory.resolved}/phploc.txt"
+            dir="${repository.directory.resolved}/${source.path}"
+        />
+    </target>
+    
+    <target name="deploy.tool.qa.phpcs" hidden="true"
+            depends="deploy.check-deploy-parameters,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag" 
+    >
+        <resolvepath propertyName="qa.phpcs.res.path" file="${qa.phpcs.path}" />
+        <exec
+            command="${qa.phpcs.res.path} --standard=PSR2 ."
+            output="${report.directory.resolved}/phpcs-full.txt"
+            dir="${repository.directory.resolved}/${source.path}"
+        />
+    </target>
+    
+    <target name="deploy.tool.qa.pdepend" hidden="true"
+            depends="deploy.check-deploy-parameters,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag" 
+    >
+        <resolvepath propertyName="qa.pdepend.res.path" file="${qa.pdepend.path}" />
+        <exec 
+            command="${qa.pdepend.res.path} --summary-xml=${report.directory.resolved}/pdepend-summary.xml --jdepend-chart=${report.directory.resolved}/pdepend-jdepend.svg --overview-pyramid=${report.directory.resolved}/pdepend-pyramid.svg ."
+            dir="${repository.directory.resolved}/${source.path}"
+        />
+    </target>
+    
+    <target name="deploy.tool.qa.phpmd" hidden="true"
+            depends="deploy.check-deploy-parameters,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag"
+    >
+        <resolvepath propertyName="qa.phpmd.res.path" file="${qa.phpmd.path}" />
+        <exec 
+            command="${qa.phpmd.res.path} ./ html codesize,unusedcode,naming --reportfile ${report.directory.resolved}/phpmd.html"
+            dir="${repository.directory.resolved}/${source.path}"            
+        />
+    </target>
+    
+    <target name="deploy.tool.qa.phpdcd" hidden="true"
+            depends="deploy.check-deploy-parameters,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag"
+    >
+        <resolvepath propertyName="qa.phpdcd.res.path" file="${qa.phpdcd.path}" />
+        <exec
+            command="${qa.phpdcd.res.path} --recursive ."
+            output="${report.directory.resolved}/phpdcd.txt"
+            dir="${repository.directory.resolved}/${source.path}"
+        />
+    </target>
+    
+    <target name="deploy.tool.qa.phpcpd" hidden="true"
+            depends="deploy.check-deploy-parameters,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag"
+    >
+        <resolvepath propertyName="qa.phpcpd.res.path" file="${qa.phpcpd.path}" />
+        <exec
+            command="${qa.phpcpd.res.path} --fuzzy --log-pmd=${report.directory.resolved}/phpcpd.xml ."
+            dir="${repository.directory.resolved}/${source.path}"
+        />
+    </target>
+    
+    <target name="deploy.tool.qa.phpmetrics" hidden="true"
+            depends="deploy.check-deploy-parameters,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag"
+    >
+        <resolvepath propertyName="qa.phpmetrics.res.path" file="${qa.phpmetrics.path}" />
+        <exec
+            command="${qa.phpmetrics.res.path} --report-html=${report.directory.resolved}/phpmetrics.html ."
+            dir="${repository.directory.resolved}/${source.path}"
+        />
+    </target>
+</project>

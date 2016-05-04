@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.step.rollback" basedir="./../../" default="help">
+    <target name="deploy.step.rollback.link" hidden="true">
+        <if>
+            <equals arg1="${deploy.enable}" arg2="true"/>
+            <then>
+                <foreach list="${deploy.hosts}" param="deploy.host" target="deploy.step.host.rollback.build" />
+            </then>
+            <else>
+                <fail message="Deploy is disable on this project" />
+            </else>
+        </if>
+    </target>
+    <target name="deploy.step.host.rollback.build" hidden="true"
+            depends="deploy.step.rollback.pre-build,
+                    deploy.step.host.rollback.link,
+                    deploy.step.rollback.post-build
+                "
+    >    
+    </target>
+    <target name="deploy.step.host.rollback.link" description="rollback current link to previous" hidden="true">
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="mv -fT ${deploy.path}/${project.name}/releases/current ${deploy.path}/${project.name}/releases/failed"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="mv -fT ${deploy.path}/${project.name}/releases/previous ${deploy.path}/${project.name}/releases/current"/>
+        </phingcall> 
+    </target>
+    <target name="deploy.step.rollback.pre-build" hidden="true">
+        <phingcall target="deploy.tool.project.hook.execute">
+            <property name="target.name" value="pre-deploy"/>
+        </phingcall>
+    </target>
+    <target name="deploy.step.rollback.post-build" hidden="true">
+        <phingcall target="deploy.tool.project.hook.execute">
+            <property name="target.name" value="post-deploy"/>
+        </phingcall>
+    </target>
+</project>

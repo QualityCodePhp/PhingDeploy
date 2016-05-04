@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.step.prepare" basedir="./../../" default="help">
+    <target name="deploy.step.prepare.tree" hidden="true">
+        <if>
+            <equals arg1="${deploy.enable}" arg2="1"/>
+            <then>
+                <foreach list="${deploy.hosts}" param="deploy.host" target="deploy.step.prepare.host.tree" />
+            </then>
+            <else>
+                <fail message="Deploy is disable on this project" />
+            </else>
+        </if>        
+    </target>
+    <target name="deploy.step.prepare.host.tree" hidden="true">
+        <phingcall target="deploy.tool.ssh">
+            <property name="path" value="${deploy.path}"/>
+            <property name="command" value="mkdir -p ${deploy.path}/${project.name}/releases ${deploy.path}/${project.name}/cache ${deploy.path}/${project.name}/log ${deploy.path}/${project.name}/shared"/>
+        </phingcall>
+    </target>
+</project>

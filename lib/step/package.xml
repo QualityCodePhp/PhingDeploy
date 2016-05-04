@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.step.package" basedir="./../../" default="help">
+    <target name="deploy.step.package.project-build" hidden="true"
+            depends="deploy.step.package.pre-build,
+                    deploy.step.package.build,
+                    deploy.step.package.post-build
+                "
+    >
+    </target>
+    <target name="deploy.step.package.pre-build" hidden="true">
+        <phingcall target="deploy.tool.project.hook.execute">
+            <property name="target.name" value="pre-package"/>
+        </phingcall>
+    </target>
+    <target name="deploy.step.package.post-build" hidden="true">
+        <phingcall target="deploy.tool.project.hook.execute">
+            <property name="target.name" value="post-package"/>
+        </phingcall>
+    </target>
+    <target name="deploy.step.package.build" hidden="true">
+        <property name="package.name" value="${package.destination.resolved}/release-${uniqid}.tar.gz" />
+        <tar destfile="${package.name}" basedir="${repository.directory.resolved}" compression="gzip" />
+        <echo message="Your package is ready ! : ${package.name}" />
+    </target>
+</project>

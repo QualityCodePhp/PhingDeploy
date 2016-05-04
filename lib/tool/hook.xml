@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.tool.project.hook" basedir="./../../" default="help">
+    <target name="deploy.tool.project.hook.execute" hidden="true">
+        <property name="is_file_exists" value="false" />
+        <exec 
+            command="if [ -f '${repository.directory.resolved}/${project.build.file.name}' ]; then echo 'true'; else echo 'false'; fi;"
+            outputProperty="is_file_exists" 
+        />
+        <if>
+            <equals arg1="${is_file_exists}" arg2="true" />
+            <then>
+                <if>
+                    <not>
+                        <equals arg1="${target.name}" arg2="" />
+                    </not>
+                    <then>
+                        <phing
+                            phingFile="${repository.directory.resolved}/${project.build.file.name}"
+                            inheritRefs="true"
+                            dir="${repository.directory.resolved}"
+                            target="${target.name}"
+                        />
+                    </then>
+                </if>              
+            </then>
+        </if>
+    </target>
+</project>

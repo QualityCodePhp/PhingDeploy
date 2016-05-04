@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy" default="help" basedir="." description="Deployment tool">
+    <includepath classpath="/usr/local/bin" />
+    <property file="./properties/build.properties"/>
+    <property file="./properties/projects/${project.name}.properties"/>
+    <property file="./properties/stage/${stage.name}.properties"/>
+    <property file="./properties/stage/${stage.name}/${project.name}.properties" override="true" />
+    <property name="project.composer" value="false"/>
+    <property name="deploy.env.name" value=""/>
+    <property name="deploy.env.value" value=""/>
+    <property name="deploy.enable" value="true"/>
+    <property name="deploy.history" value="5"/>
+    <property name="repository" value=""/>
+    <property name="repository.tag" value=""/>
+    <property name="ignore.tag" value="false"/>
+    <property name="repository.branch" value="master"/>
+    <property name="project.build.file.name" value="build.xml"/>
+    <property name="deploy.cron" value="false"/>
+
+    <property name="uniqid" value=""/>
+    
+    <property name="repository.directory.resolved" value=""/>
+    <property name="report.directory.resolved" value=""/>
+    <property name="package.destination.resolved" value=""/>
+    <property name="log.destination.resolved" value=""/>
+        
+    <!-- Import tools tasks -->
+    <import file="./lib/tool/composer.xml"/>
+    <import file="./lib/tool/cron.xml"/>
+    <import file="./lib/tool/git.xml"/>
+    <import file="./lib/tool/hook.xml"/>
+    <import file="./lib/tool/parameters.xml"/>
+    <import file="./lib/tool/qa.xml"/>
+    <import file="./lib/tool/ssh.xml"/>
+    
+    <!-- Import deploy step tasks -->
+    <import file="./lib/step/history.xml"/>
+    <import file="./lib/step/package.xml"/>
+    <import file="./lib/step/prepare.xml"/>
+    <import file="./lib/step/remote.xml"/>
+    <import file="./lib/step/rollback.xml"/>
+    
+    <target name="deploy.init.uniqid">
+        <php expression="uniqid()" returnProperty="uniqid"/>
+        <property name="repository.directory" value="./releases/${project.name}/${stage.name}/${uniqid}/code"/>
+        <property name="report.directory" value="./releases/${project.name}/${stage.name}/${uniqid}/report"/>
+        <property name="package.destination" value="./releases/${project.name}/${stage.name}/${uniqid}/package"/>
+        <property name="log.destination" value="./releases/${project.name}/log"/>
+    
+        <resolvepath propertyName="repository.directory.resolved" file="${repository.directory}" />
+        <resolvepath propertyName="report.directory.resolved" file="${report.directory}" />
+        <resolvepath propertyName="package.destination.resolved" file="${package.destination}" />
+        <resolvepath propertyName="log.destination.resolved" file="${log.destination}" />
+    </target>
+    
+    <target name="deploy.check-deploy-parameters" hidden="true">
+        <fail if="${repository}" message="Missing `repository` parameter" />
+        <fail if="${project.name}" message="Missing `project.name` parameter" />
+        <fail if="${stage.name}" message="Missing `stage.name` parameter" />
+    </target>
+
+    <target name="deploy.releases-directories" hidden="true">
+        <mkdir dir="${repository.directory.resolved}" />
+        <mkdir dir="${report.directory.resolved}" />
+        <mkdir dir="${package.destination.resolved}" />
+        <mkdir dir="${log.destination.resolved}" />
+        <record name="${log.destination.resolved}/${stage.name}.error.log" emacsmode="true" append="true" loglevel="error"/>
+        <record name="${log.destination.resolved}/${stage.name}.warn.log" emacsmode="true" append="true" loglevel="warn"/>
+        <record name="${log.destination.resolved}/${stage.name}.info.log" emacsmode="true" append="true" loglevel="info"/>
+    </target>
+    
+    <target name="deploy" description="Run deployment" 
+            depends="package,
+                    deploy.step.remote,
+                    deploy.step.history.delete-oldest-deploy
+                "
+    >
+    </target>
+    
+    <target name="package" description="Run packaging" 
+            depends="deploy.check-deploy-parameters,
+                    deploy.init.uniqid,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag,
+                    deploy.tool.composer.get,
+                    deploy.tool.project.parameters.execute,
+                    deploy.tool.composer.install,
+                    deploy.tool.cron.prepare,
+                    deploy.step.package.project-build
+                "
+    >
+    </target>
+    
+    <target name="prepare" depends="deploy.step.prepare.tree" description="Prepare server directories">
+    </target>
+    
+    <target name="rollback" depends="deploy.step.rollback.link" description="Rollback to previous deployment">
+    </target>
+    
+    <target name="qa" description="Run qa tools"
+            depends="deploy.check-deploy-parameters,
+                    deploy.init.uniqid,
+                    deploy.releases-directories,
+                    deploy.tool.git.clone-repository,
+                    deploy.tool.git.lastest-version,
+                    deploy.tool.git.checkout-tag,
+                    deploy.tool.qa.all"
+    >
+    </target>
+    
+    <target name="deploy-with-qa" description="Run qa and deployment"
+            depends="package,
+                    deploy.step.remote,
+                    deploy.step.history.delete-oldest-deploy
+                "
+    >
+    </target>
+    
+    <target name="help" description="Display deploy help">
+        <echo>
+            Help
+            ---------------------------------------------
+            
+            Usage : 
+            $ phing help                                                                            => Display this message
+            $ phing prepare -Dproject.name=test -Dstage.name=production                             => Prepare server
+            $ phing package -Dproject.name=test -Dstage.name=production -Drepository.tag=1.0        => Application packaging
+            $ phing deploy -Dproject.name=test -Dstage.name=production -Drepository.tag=1.0         => Application deployment
+            $ phing qa -Dproject.name=test -Dstage.name=production -Drepository.tag=1.0             => Run qa tools
+            $ phing deploy-with-qa -Dproject.name=test -Dstage.name=production -Drepository.tag=1.0 => Run qa tools and deployment tasks
+            $ phing rollback -Dproject.name=test -Dstage.name=production                            => Rollback to previous deployment
+            
+            ---------------------------------------------
+            
+            Deploy actions :
+            - clone the repository to a directory
+            - checkout the lastest tag
+            - composer install
+            - package source to a tgz
+            
+            Enjoy !
+        </echo>
+    </target>
+</project>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.tool.git" basedir="./../../" default="help">
+    <target name="deploy.tool.git.lastest-version" description="Retrieve the lastest version" hidden="true">
+        <if>
+            <equals arg1="${repository.tag}" arg2="" />
+            <then>
+                <if>
+                    <equals arg1="${ignore.tag}" arg2="0" />
+                    <then>
+                        <exec 
+                            outputProperty="repository.tag" 
+                            command="git describe --tags `git rev-list --branches=${repository.branch} --tags --max-count=1`" 
+                            dir="${repository.directory.resolved}"
+                        />
+                    </then>
+                </if>
+            </then>
+        </if>
+    </target>
+    
+    <target name="deploy.tool.git.clone-repository" hidden="true">
+        <gitclone
+            repository="${repository}"
+            targetPath="${repository.directory.resolved}" />
+    </target>
+    <target name="deploy.tool.git.checkout-tag" description="checkout the lastest if tag exists" hidden="true">
+        <if>
+            <equals arg1="${ignore.tag}" arg2="0" />
+            <then>
+                <gittag repository="${repository.directory.resolved}"
+                        list="true"
+                        outputProperty="tags"
+                />
+                <if>
+                    <not>
+                        <equals arg1="${tags}" arg2="" />
+                    </not>
+                    <then>
+                        <gitcheckout 
+                            repository="${repository.directory.resolved}"
+                            branchname="tags/${repository.tag}"
+                            quiet="true"/>                
+                    </then>
+                </if>
+            </then>
+            <else>
+                <gitcheckout 
+                    repository="${repository.directory.resolved}"
+                    branchname="${repository.branch}"
+                    quiet="true"/>
+            </else>
+        </if>
+        <exec 
+            command="rm -Rf .git" 
+            dir="${repository.directory.resolved}"
+        />                
+    </target>
+</project>

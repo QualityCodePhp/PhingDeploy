@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.step.history" basedir="./../../" default="help">
+    <target name="deploy.step.history.delete-oldest-deploy" hidden="true">
+        <foreach list="${deploy.hosts}" param="deploy.host" target="deploy.step.host.history.delete-oldest-deploy" />
+    </target>
+    <target name="deploy.step.host.history.delete-oldest-deploy" description="Keep only 5 deploy in history" hidden="true">
+        <php expression="${deploy.history} + 1" returnProperty="sum"/>
+        <phingcall target="deploy.tool.ssh">
+            <property name="path" value="${deploy.path}/${project.name}/releases"/>
+            <property name="command" value="rm -Rf `ls -tl | grep ^d | cut -d &quot; &quot; -f10 | tail -n +${sum}`"/>
+        </phingcall>
+    </target>
+</project>

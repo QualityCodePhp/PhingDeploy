@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.step.remote" basedir="./../../" default="help">
+    <target name="deploy.step.remote" description="Remote meta task" hidden="true">
+        <if>
+            <equals arg1="${deploy.enable}" arg2="1"/>
+            <then>
+                <foreach list="${deploy.hosts}" param="deploy.host" target="deploy.step.host.remote" />
+            </then>
+            <else>
+                <fail message="Deploy is disable on this project" />
+            </else>
+        </if>
+    </target>
+    <target name="deploy.step.host.remote" description="Remote meta task" hidden="true"
+            depends="deploy.step.remote.copy-package,
+                    deploy.step.remote.unarchived-package,
+                    deploy.step.remote.pre-build,
+                    deploy.step.remote.shared-link,
+                    deploy.tool.cron.installation,
+                    deploy.tool.composer.remote.install,
+                    deploy.step.remote.update-current-link,
+                    deploy.tool.cron.installation,
+                    deploy.step.remote.post-build
+                "
+    >
+    </target>
+    <target name="deploy.step.remote.pre-build" hidden="true">
+        <phingcall target="deploy.tool.project.hook.execute">
+            <property name="target.name" value="pre-deploy"/>
+        </phingcall>
+    </target>
+    <target name="deploy.step.remote.post-build" hidden="true">
+        <phingcall target="deploy.tool.project.hook.execute">
+            <property name="target.name" value="post-deploy"/>
+        </phingcall>
+    </target>
+
+    <target name="deploy.step.remote.copy-package" hidden="true">
+        <scp 
+            username="${deploy.user}" 
+            host="${deploy.host}" 
+            pubkeyfile="${deploy.pubkeyfile}"
+            privkeyfile="${deploy.privkeyfile}"
+            todir="${deploy.path}/${project.name}/packages" 
+            file="${package.destination.resolved}/release-${uniqid}.tar.gz"
+        />
+    </target>
+    <target name="deploy.step.remote.unarchived-package" hidden="true">
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="mkdir ${deploy.path}/${project.name}/releases/${uniqid}"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="cp ${deploy.path}/${project.name}/packages/release-${uniqid}.tar.gz ${deploy.path}/${project.name}/releases/${uniqid}"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="tar xvzf ${deploy.path}/${project.name}/releases/${uniqid}/release-${uniqid}.tar.gz -C ${deploy.path}/${project.name}/releases/${uniqid} > /dev/null"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="rm ${deploy.path}/${project.name}/releases/${uniqid}/release-${uniqid}.tar.gz"/>
+        </phingcall>
+    </target>
+    <target name="deploy.step.remote.shared-link" hidden="true">
+        <foreach list="${shared.folders}" param="shared.folder" target="deploy.step.remote.folder.shared-link" />
+    </target>
+    <target name="deploy.step.remote.folder.shared-link" hidden="true">
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="rm -Rf ${deploy.path}/${project.name}/releases/${uniqid}/${shared.folder}"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="mkdir -p  ${deploy.path}/${project.name}/shared/${shared.folder}"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="ln -s ${deploy.path}/${project.name}/shared/${shared.folder} ${deploy.path}/${project.name}/releases/${uniqid}/${shared.folder}"/>
+        </phingcall>
+    </target>
+    <target name="deploy.step.remote.update-current-link" description="Save previous link and update the current link" hidden="true">
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="rm -f ${deploy.path}/${project.name}/releases/previous &amp;&amp; cp -Pf ${deploy.path}/${project.name}/releases/current ${deploy.path}/${project.name}/releases/previous"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="ln -sf ${deploy.path}/${project.name}/releases/${uniqid} ${deploy.path}/${project.name}/releases/next"/>
+        </phingcall>
+        <phingcall target="deploy.tool.ssh">
+            <property name="command" value="mv -fT ${deploy.path}/${project.name}/releases/next ${deploy.path}/${project.name}/releases/current"/>
+        </phingcall>
+    </target>
+</project>

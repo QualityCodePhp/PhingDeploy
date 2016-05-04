@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.tool.project.parameters" basedir="./../../" default="help">
+    <target name="deploy.tool.project.parameters.execute" hidden="true">
+        <foreach list="${project.configuration.files}" param="project.configuration.file" target="deploy.tool.project.parameters.copy" />
+    </target>
+    <target name="deploy.tool.project.parameters.copy" hidden="true">
+        <exec 
+            command="if [ -f 'releases/${project.name}/${stage.name}/${uniqid}/code/${project.configuration.file}.${stage.name}' ]; then echo 'true'; else echo 'false'; fi;"
+            outputProperty="is_file_exists" 
+        />
+        <if>
+            <equals arg1="${is_file_exists}" arg2="true" />
+            <then>
+                <copy file="releases/${project.name}/${stage.name}/${uniqid}/code/${project.configuration.file}.${stage.name}" tofile="releases/${project.name}/${stage.name}/${uniqid}/code/${project.configuration.file}" />
+            </then>
+        </if>
+    </target>
+</project>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.tool.cron" basedir="./../../" default="help">
+    <target name="deploy.tool.cron.prepare" description="replace or install project cron" hidden="true">
+        <if>
+            <equals arg1="${deploy.cron}" arg2="true"/>
+            <then>
+                <copy todir="${repository.directory.resolved}/Resources" overwrite="true">
+                    <filterchain>
+                        <replacetokens begintoken="__" endtoken="__">
+                            <token key="PATH" value="${deploy.path}/${project.name}/releases/current" />
+                        </replacetokens>
+                    </filterchain>
+                    <!--            <mapper type="glob" from="${project.name}-*" to="*-${stage.name}" />-->
+                    <fileset dir="${repository.directory.resolved}/Resources/cron.d">
+                        <include name="${project.name}-${stage.name}-*" />
+                    </fileset>
+                </copy>
+            </then>
+        </if>
+    </target>
+    <target name="deploy.tool.cron.installation" description="replace or install project cron" hidden="true">
+         <if>
+            <equals arg1="${deploy.cron}" arg2="true"/>
+            <then>
+                <phingcall target="deploy.tool.ssh">
+                    <property name="command" value="sudo rm -f /etc/cron.d/${project.name}-${stage.name}-*"/>
+                </phingcall>
+                <phingcall target="deploy.tool.ssh">
+                    <property name="command" value="sudo cp ${deploy.path}/${project.name}/releases/current/Resources/${project.name}-${stage.name}-* /etc/cron.d/"/>
+                </phingcall>
+                <phingcall target="deploy.tool.ssh">
+                    <property name="command" value="sudo chmod 644 /etc/cron.d/${project.name}-${stage.name}-*"/>
+                </phingcall>
+                <phingcall target="deploy.tool.ssh">
+                    <property name="command" value="sudo chown root:root /etc/cron.d/${project.name}-${stage.name}-*"/>
+                </phingcall>
+                <phingcall target="deploy.tool.ssh">
+                    <property name="command" value="sudo /etc/init.d/cron restart"/>
+                </phingcall>
+            </then>
+        </if>
+    </target>
+</project>

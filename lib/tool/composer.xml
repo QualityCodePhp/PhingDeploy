@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="deploy.tool.composer" basedir="./../../" default="help">
+    <target name="deploy.tool.composer.install" hidden="true">
+        <property name="export.env" value=""/>
+        <if>
+            <not>
+                <equals arg1="${deploy.env.name}" arg2="" />
+            </not>
+            <then>
+                <if>
+                    <not>
+                        <equals arg1="${deploy.env.value}" arg2="" />
+                    </not>
+                    <then>
+                        <property name="export.env" value="export ${deploy.env.name}=${deploy.env.value} &amp;&amp;"  override="true"/>
+                    </then>
+                </if>
+            </then>
+        </if>
+        
+        <if>
+            <not>
+                <equals arg1="${project.composer}" arg2="0" />
+            </not>
+            <then>
+                <exec command="${export.env} php ${repository.directory.resolved}/composer.phar install --no-scripts --no-dev --no-interaction --prefer-dist -o --no-progress --ignore-platform-reqs"
+                      dir="${repository.directory.resolved}"
+                />
+            </then>
+        </if>
+    </target>
+    <target name="deploy.tool.composer.remote.install" hidden="true">
+        <property name="export.env" value=""/>
+        <if>
+            <not>
+                <equals arg1="${deploy.env.name}" arg2="" />
+            </not>
+            <then>
+                <if>
+                    <not>
+                        <equals arg1="${deploy.env.value}" arg2="" />
+                    </not>
+                    <then>
+                        <property name="export.env" value="export ${deploy.env.name}=${deploy.env.value} &amp;&amp;"  override="true"/>
+                    </then>
+                </if>
+            </then>
+        </if>
+        
+        <if>
+            <not>
+                <equals arg1="${project.composer}" arg2="0" />
+            </not>
+            <then>
+                <phingcall target="deploy.tool.ssh">
+                    <property name="path" value="${deploy.path}/${project.name}/releases/${uniqid}" />
+                    <property name="command" value="${export.env} php composer.phar run-script post-install-cmd --no-dev --no-interaction"/>
+                </phingcall>
+            </then>
+        </if>
+    </target>
+    <target name="deploy.tool.composer.get" hidden="true">
+        <if>
+            <not>
+                <equals arg1="${project.composer}" arg2="0" />
+            </not>
+            <then>
+                <exec command="cd ${repository.directory.resolved} &amp;&amp; php -r &quot;readfile('https://getcomposer.org/installer');&quot; | php" />
+            </then>
+        </if>
+    </target>
+</project>
