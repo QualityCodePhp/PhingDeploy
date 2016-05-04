@@ -98,15 +98,15 @@ configuration du projet.
 └── properties
     ├── build.properties                    => Paramètrage général
     ├── projects                            => Définition des projets
-    │   ├── swagger_bundle.properties
-    │   └── wonderphoto.properties
+    │   ├── project1.properties
+    │   └── project2.properties
     └── stage                               => Définition des environnements
         ├── preproduction.properties
         ├── production.properties
         ├── recette.properties
         └── recette                         => Définition des spécificités des projets pour un environnement
-            ├── swagger_bundle.properties
-            └── wonderphoto.properties
+            ├── project1.properties
+            └── project2.properties
 ```
 
 ### Release ###
