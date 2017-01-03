@@ -1,6 +1,7 @@
 {
-    "name": "wonderbox-deploy",
-    "license": "Wonderbox",
+    "name": "phing-deploy",
+    "description": "A simple tool to deploy your project",
+    "license": "MIT",
     "type": "project",
     "require": {
         "phing/phing": "^2.11",
