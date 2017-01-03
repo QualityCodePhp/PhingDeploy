@@ -1,8 +1,18 @@
 {
-    "name": "phing-deploy",
+    "name": "qualitycode/phing-deploy",
     "description": "A simple tool to deploy your project",
     "license": "MIT",
     "type": "project",
+    "keywords": ["deploy","phing"],
+    "homepage": "https://github.com/QualityCodePhp/PhingDeploy",
+    "authors": [
+        {
+            "name": "Flavien METIVIER",
+            "email": "flavien.metivier@quaity-code.fr",
+            "homepage": "http://www.quality-code.fr",
+            "role": "Developer"
+        }
+    ],
     "require": {
         "phing/phing": "^2.11",
         "pear/archive_tar": "^1.3",
