@@ -57,7 +57,7 @@ Par exemple pour parameters.yml => parameters.yml.production
 
 ```
 #!bash
-$ git clone git@github.com/flavien-metivier/phingDeploy.git
+$ git clone git@github.com:QualityCodePhp/PhingDeploy.git
 $ composer install
 
 ```
